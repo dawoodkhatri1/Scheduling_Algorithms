@@ -144,7 +144,7 @@ st.markdown(
 
 # Add a banner image (optional)
 image = Image.open("banner2.jpeg")  # Replace with your image file
-st.image(image, caption="Process Scheduling Algorithms", use_column_width=True)
+st.image(image, caption="Process Scheduling Algorithms", use_container_width=True)
 
 st.sidebar.title("Choose Scheduling Algorithm")
 algorithm = st.sidebar.selectbox(
