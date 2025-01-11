@@ -151,7 +151,7 @@ st.markdown("""
 
 # Load the image
 image = Image.open("banner2.jpeg")  # Correct path or URL
-st.image(image, caption="Process Scheduling Algorithms", use_column_width=True)
+st.image(image, caption="Process Scheduling Algorithms", use_container_width=True)
 
 st.sidebar.title("Choose Scheduling Algorithm")
 algorithm = st.sidebar.selectbox(
