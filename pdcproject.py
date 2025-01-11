@@ -1,6 +1,6 @@
-import streamlit as st
 import time
 from PIL import Image
+import streamlit as st
 
 # Scheduling Algorithms
 def sjf(process_list):
@@ -132,19 +132,26 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("Scheduling Algorithms 🚀")
+# Add a header with animation
+st.markdown("""
+    <style>
+        .animated-title {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+    <div class="animated-title" style="text-align: center;">
+        <h2 style='color: #4CAF50;'>Efficient Process Scheduling Made Simple</h2>
+    </div>
+""", unsafe_allow_html=True)
 
-# Header with animated GIF
-st.markdown(
-    """<div style='text-align: center;'>
-    <h2 style='color: #4CAF50;'>Efficient Process Scheduling Made Simple</h2>
-    </div>""",
-    unsafe_allow_html=True
-)
-
-# Add a banner image (optional)
-image = Image.open("banner2.jpeg")  # Replace with your image file
-st.image(image, caption="Process Scheduling Algorithms", use_container_width=True)
+# Load the image
+image = Image.open("banner2.jpeg")  # Correct path or URL
+st.image(image, caption="Process Scheduling Algorithms", use_column_width=True)
 
 st.sidebar.title("Choose Scheduling Algorithm")
 algorithm = st.sidebar.selectbox(
@@ -186,6 +193,10 @@ st.table(process_table)
 if algorithm == "Round Robin":
     time_quanta = st.sidebar.slider("Select Time Quanta", 1, 10, 2)
 
+# Add animation or a loading effect when running the algorithm
+with st.spinner("Running the algorithm..."):
+    time.sleep(2)  # Simulate a processing delay
+
 if st.button("Run Algorithm"):
     if algorithm == "SJF":
         gantt, completed = sjf([p.copy() for p in processes])
@@ -196,9 +207,10 @@ if st.button("Run Algorithm"):
     elif algorithm == "Round Robin":
         gantt, completed = round_robin([p.copy() for p in processes], time_quanta)
 
-    # Display Results
+    # Display Results with animation
     st.write("### Gantt Chart")
-    st.write(" -> ".join(gantt))
+    gantt_chart = " -> ".join(gantt)
+    st.markdown(f"<h3 style='text-align: center; color: #0073e6;'>{gantt_chart}</h3>", unsafe_allow_html=True)
 
     st.write("### Process Completion Details")
     result_table = {
