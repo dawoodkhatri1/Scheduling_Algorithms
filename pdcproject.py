@@ -124,7 +124,6 @@ def round_robin(process_list, time_quanta):
 
     return gantt, completed
 
-
 # Streamlit UI
 st.set_page_config(
     page_title="Scheduling Algorithms",
