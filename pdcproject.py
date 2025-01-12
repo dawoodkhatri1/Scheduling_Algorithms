@@ -153,61 +153,94 @@ st.markdown("""
 image = Image.open("banner2.jpeg")  # Correct path or URL
 st.image(image, caption="Process Scheduling Algorithms", use_container_width=True)
 
+# Sidebar options
+st.sidebar.title("Process List Selection")
+
+# Manage button states using session_state
+if "processes" not in st.session_state:
+    st.session_state["processes"] = []
+if "custom" not in st.session_state:
+    st.session_state["custom"] = False
+if "predefined" not in st.session_state:
+    st.session_state["predefined"] = False
+
+if st.sidebar.button("User Input Process List"):
+    st.session_state["custom"] = True
+    st.session_state["predefined"] = False
+
+if st.sidebar.button("Predefined Process List"):
+    st.session_state["predefined"] = True
+    st.session_state["custom"] = False
+
+# Process List Selection Logic
+if st.session_state["custom"]:
+    num_processes = st.sidebar.number_input("Number of Processes", min_value=1, max_value=20, value=5)
+    st.session_state["processes"] = []
+    for i in range(num_processes):
+        st.sidebar.write(f"### Process P{i+1}")
+        burst_time = st.sidebar.number_input(f"Burst Time of P{i+1}", min_value=1, value=5, key=f"burst_{i}")
+        arrival_time = st.sidebar.number_input(f"Arrival Time of P{i+1}", min_value=0, value=0, key=f"arrival_{i}")
+        st.session_state["processes"].append([burst_time, arrival_time, f"P{i+1}"])
+
+elif st.session_state["predefined"]:
+    st.session_state["processes"] = [
+        [6, 2, "P1"],
+        [2, 5, "P2"],
+        [8, 1, "P3"],
+        [3, 0, "P4"],
+        [4, 4, "P5"]
+    ]
+
+# Algorithm selection
 st.sidebar.title("Choose Scheduling Algorithm")
 algorithm = st.sidebar.selectbox(
     "Select an algorithm:",
     ("SJF", "FCFS", "Priority", "Round Robin")
 )
 
-# Predefined Processes
-processes = [
-    [6, 2, "P1"],
-    [2, 5, "P2"],
-    [8, 1, "P3"],
-    [3, 0, "P4"],
-    [4, 4, "P5"]
-]
-
-# For Priority Scheduling: Ask for Priority Values in Sidebar
-if algorithm == "Priority":
+# For Priority Scheduling: Ask for Priority Values
+if algorithm == "Priority" and st.session_state["processes"]:
     st.sidebar.write("### Set Priorities")
     priority_values = [
-        st.sidebar.number_input(f"Priority for {process[2]}:", min_value=1, max_value=10, value=5)
-        for process in processes
+        st.sidebar.number_input(f"Priority for {process[2]}:", min_value=1, max_value=10, value=5, key=f"priority_{i}")
+        for i, process in enumerate(st.session_state["processes"])
     ]
-    processes = [
-        [priority_values[i], processes[i][2], processes[i][0], processes[i][1]]
-        for i in range(len(processes))
+    st.session_state["processes"] = [
+        [priority_values[i], process[2], process[0], process[1]]
+        for i, process in enumerate(st.session_state["processes"])
     ]
 
-st.write("### Process List")
-process_table = {
-    "Process ID": [p[2] if algorithm != "Priority" else p[1] for p in processes],
-    "Burst Time": [p[0] if algorithm != "Priority" else p[2] for p in processes],
-    "Arrival Time": [p[1] if algorithm != "Priority" else p[3] for p in processes]
-}
-if algorithm == "Priority":
-    process_table["Priority"] = [p[0] for p in processes]
-st.table(process_table)
+# Display process table
+if st.session_state["processes"]:
+    st.write("### Process List")
+    process_table = {
+        "Process ID": [p[2] if algorithm != "Priority" else p[1] for p in st.session_state["processes"]],
+        "Burst Time": [p[0] if algorithm != "Priority" else p[2] for p in st.session_state["processes"]],
+        "Arrival Time": [p[1] if algorithm != "Priority" else p[3] for p in st.session_state["processes"]]
+    }
+    if algorithm == "Priority":
+        process_table["Priority"] = [p[0] for p in st.session_state["processes"]]
+    st.table(process_table)
 
-if algorithm == "Round Robin":
+# Round Robin: Get time quantum
+if algorithm == "Round Robin" and st.session_state["processes"]:
     time_quanta = st.sidebar.slider("Select Time Quanta", 1, 10, 2)
 
-# Add animation or a loading effect when running the algorithm
-with st.spinner("Running the algorithm..."):
-    time.sleep(2)  # Simulate a processing delay
+# Run the algorithm and display results
+if st.session_state["processes"] and st.button("Run Algorithm"):
+    with st.spinner("Running the algorithm..."):
+        time.sleep(2)  # Simulate delay for processing
 
-if st.button("Run Algorithm"):
     if algorithm == "SJF":
-        gantt, completed = sjf([p.copy() for p in processes])
+        gantt, completed = sjf([p.copy() for p in st.session_state["processes"]])
     elif algorithm == "FCFS":
-        gantt, completed = fcfs([p.copy() for p in processes])
+        gantt, completed = fcfs([p.copy() for p in st.session_state["processes"]])
     elif algorithm == "Priority":
-        gantt, completed = priority([p.copy() for p in processes])
+        gantt, completed = priority([p.copy() for p in st.session_state["processes"]])
     elif algorithm == "Round Robin":
-        gantt, completed = round_robin([p.copy() for p in processes], time_quanta)
+        gantt, completed = round_robin([p.copy() for p in st.session_state["processes"]], time_quanta)
 
-    # Display Results with animation
+    # Display Results
     st.write("### Gantt Chart")
     gantt_chart = " -> ".join(gantt)
     st.markdown(f"<h3 style='text-align: center; color: #0073e6;'>{gantt_chart}</h3>", unsafe_allow_html=True)
